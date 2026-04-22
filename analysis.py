@@ -20,95 +20,87 @@ def get_heights(dataframe, column, conversion_function=lambda x: x):
     return heights
 
 def get_z_score(x, mu, sigma):
-    return x - mu / sigma
+    return (x - mu) / sigma
 
-marsh_data = openpyxl.load_workbook("heights-data-marsh-1988-great-britain.xlsx")
-marsh_sheet = marsh_data.active
+def process_dataset(name, filename, conversion_function=lambda x: x):
+    data = openpyxl.load_workbook(filename)
+    sheet = data.active
+    
+    male_col, female_col = 0, 1
+    
+    males = get_heights(sheet, male_col, conversion_function)
+    females = get_heights(sheet, female_col, conversion_function)
+    
+    male_mean, female_mean = np.mean(males), np.mean(females)
+    male_std, female_std = np.std(males), np.std(females)
+    
+    correlation = np.corrcoef(males, females)[0, 1]
+    
+    # Theoretical difference
+    diff_mean = male_mean - female_mean
+    var_of_diff = male_std**2 + female_std**2 - 2 * correlation * male_std * female_std
+    std_of_diff = np.sqrt(var_of_diff)
+    
+    z_score = get_z_score(0, diff_mean, std_of_diff)
+    p_value = stats.norm.sf(z_score)
+    
+    # Sample height differences
+    pairs = get_heights_pairwise(sheet, conversion_function)
+    diffs = np.array([p[0] - p[1] for p in pairs])
+    sample_diff_mean = np.mean(diffs)
+    sample_diff_std = np.std(diffs)
+    
+    return {
+        "name": name,
+        "male_mean": male_mean,
+        "female_mean": female_mean,
+        "male_std": male_std,
+        "female_std": female_std,
+        "correlation": correlation,
+        "diff_mean": diff_mean,
+        "var_of_diff": var_of_diff,
+        "std_of_diff": std_of_diff,
+        "z_score": z_score,
+        "p_value": p_value,
+        "sample_diff_mean": sample_diff_mean,
+        "sample_diff_std": sample_diff_std
+    }
 
-galton_data = openpyxl.load_workbook("GaltonFamilies-1886.xlsx")
-galton_sheet = galton_data.active
+datasets = [
+    process_dataset("Marsh", "heights-data-marsh-1988-great-britain.xlsx"),
+    process_dataset("Galton", "GaltonFamilies-1886.xlsx", lambda x: 25.4 * x)
+]
 
-male_column = 0
-female_column = 1
-
-marsh_male_heights = get_heights(marsh_sheet, male_column)
-marsh_female_heights = get_heights(marsh_sheet, female_column)
-
-galton_male_heights = get_heights(galton_sheet, male_column, lambda x: 25.4*x)
-galton_female_heights = get_heights(galton_sheet, female_column, lambda x: 25.4*x)
-
-marsh_male_heights_mean = np.mean(marsh_male_heights)
-marsh_female_heights_mean = np.mean(marsh_female_heights)
-galton_male_heights_mean = np.mean(galton_male_heights)
-galton_female_heights_mean = np.mean(galton_female_heights)
-
-marsh_male_heights_std = np.std(marsh_male_heights)
-marsh_female_heights_std = np.std(marsh_female_heights)
-galton_male_heights_std = np.std(galton_male_heights)
-galton_female_heights_std = np.std(galton_female_heights)
-
-
-# Mean
+# Output
 print("SAMPLE MEANS")
-print(f"Marsh Mean male height: {marsh_male_heights_mean:.3f} mm")
-print(f"Marsh Mean female height: {marsh_female_heights_mean:.3f} mm")
-print(f"Galton Mean male height: {galton_male_heights_mean:.3f} mm")
-print(f"Galton Mean female height: {galton_female_heights_mean:.3f} mm")
+for d in datasets:
+    print(f"{d['name']} Mean male height: {d['male_mean']:.3f} mm")
+    print(f"{d['name']} Mean female height: {d['female_mean']:.3f} mm")
 print()
 
-# Standard deviation
 print("SAMPLE STANDARD DEVIATIONS")
-print(f"Marsh male height standard deviation: {marsh_male_heights_std:.3f} mm")
-print(f"Marsh female height standard deviation: {marsh_female_heights_std:.3f} mm")
-print(f"Galton male height standard deviation: {galton_male_heights_std:.3f} mm")
-print(f"Galton female height standard deviation: {galton_female_heights_std:.3f} mm")
+for d in datasets:
+    print(f"{d['name']} male height standard deviation: {d['male_std']:.3f} mm")
+    print(f"{d['name']} female height standard deviation: {d['female_std']:.3f} mm")
 print()
-
-# correlation
-
-marsh_correlation = np.corrcoef(marsh_male_heights, marsh_female_heights)[0, 1]
-galton_correlation = np.corrcoef(marsh_male_heights, marsh_female_heights)[0, 1]
 
 print("SAMPLE MEAN CORRELATION")
-print(f"Correlation between male and female heights (Marsh) {marsh_correlation:.3f}")
-print(f"Correlation between male and female heights (Galton) {galton_correlation:.3f}")
+for d in datasets:
+    print(f"Correlation between male and female heights ({d['name']}) {d['correlation']:.3f}")
 print()
 
-# differences
 print("THEORETICAL DIFFERENCE MEAN AND STANDARD DEVIATIONS")
-print(f"marsh E(x1-x2) = {marsh_male_heights_mean - marsh_female_heights_mean:.3f} mm")
-print(f"galton E(x1-x2) = {galton_male_heights_mean - galton_female_heights_mean:.3f} mm")
-marsh_var_of_difference = marsh_male_heights_std**2 + marsh_female_heights_std**2 - 2*marsh_correlation*marsh_male_heights_std*marsh_female_heights_std
-print(f"marsh Var(x1-x2) = {marsh_var_of_difference:.3f} mm^2")
-print(f"\tstd of that is {np.sqrt(marsh_var_of_difference):.3f} mm")
-galton_var_of_difference = galton_male_heights_std**2 + galton_female_heights_std**2 - 2*galton_correlation*galton_male_heights_std*galton_male_heights_std
-print(f"galton Var(x1-x2) = {galton_var_of_difference:.3f} mm^2")
-print(f"\tstd of that is {np.sqrt(galton_var_of_difference):.3f} mm")
-marsh_theoretical_z_score_of_difference = get_z_score(0, marsh_male_heights_mean - marsh_female_heights_mean, np.sqrt(marsh_var_of_difference))
-print(f"(marsh) Z score of difference=0: {marsh_theoretical_z_score_of_difference:.3f}")
-print(f"P(z > {marsh_theoretical_z_score_of_difference:.3f}): {stats.norm.sf(marsh_theoretical_z_score_of_difference):.3f}")
-galton_theoretical_z_score_of_difference = get_z_score(0, galton_male_heights_mean - galton_female_heights_mean, np.sqrt(galton_var_of_difference))
-print(f"(galton) z score of difference=0: {galton_theoretical_z_score_of_difference:.3f}")
-print(f"P(z > {galton_theoretical_z_score_of_difference:.3f}): {stats.norm.sf(galton_theoretical_z_score_of_difference):.3f}")
+for d in datasets:
+    name_lower = d['name'].lower()
+    print(f"{name_lower} E(x1-x2) = {d['diff_mean']:.3f} mm")
+    print(f"{name_lower} Var(x1-x2) = {d['var_of_diff']:.3f} mm^2")
+    print(f"\tstd of that is {d['std_of_diff']:.3f} mm")
+    print(f"({name_lower}) Z score of difference=0: {d['z_score']:.3f}")
+    print(f"P(z > {d['z_score']:.3f}): {d['p_value']:.3f}")
 print()
-
-# height difference calculations
-marsh_pairs = get_heights_pairwise(marsh_sheet)
-galton_pairs = get_heights_pairwise(galton_sheet, lambda x: 25.4*x)
-
-marsh_height_differences = []
-for pair in marsh_pairs:
-    marsh_height_differences.append(pair[0] - pair[1])
-marsh_height_differences = np.array(marsh_height_differences)
-
-galton_height_differences = []
-for pair in galton_pairs:
-    galton_height_differences.append(pair[0] - pair[1])
-galton_height_differences = np.array(galton_height_differences)
 
 print("SAMPLE DIFFERENCE MEAN AND STANDARD DEVIATIONS")
-print(f"Marsh height difference mean: {np.mean(marsh_height_differences):.3f} mm")
-print(f"Marsh height difference std: {np.std(marsh_height_differences):.3f} mm")
-print(f"Galton height difference mean: {np.mean(galton_height_differences):.3f} mm")
-print(f"Galton height difference std: {np.std(galton_height_differences):.3f} mm")
+for d in datasets:
+    print(f"{d['name']} height difference mean: {d['sample_diff_mean']:.3f} mm")
+    print(f"{d['name']} height difference std: {d['sample_diff_std']:.3f} mm")
 print()
