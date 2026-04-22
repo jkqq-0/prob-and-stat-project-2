@@ -44,12 +44,18 @@ def process_dataset(name, filename, conversion_function=lambda x: x):
     z_score = get_z_score(0, diff_mean, std_of_diff)
     p_value = stats.norm.sf(z_score)
     
-    # Sample height differences
+    # Sample statistical height differences
     pairs = get_heights_pairwise(sheet, conversion_function)
     diffs = np.array([p[0] - p[1] for p in pairs])
     sample_diff_mean = np.mean(diffs)
     sample_diff_std = np.std(diffs)
-    
+    sample_diff_z_score = get_z_score(0, sample_diff_mean, sample_diff_std)
+    p_value = stats.norm.sf(sample_diff_z_score)
+
+    # actual count with height difference > 0
+    positive_diffs = [k for k in diffs if k > 0]
+    positive_diff_proportion = len(positive_diffs) / len(diffs)
+
     return {
         "name": name,
         "male_mean": male_mean,
@@ -63,7 +69,10 @@ def process_dataset(name, filename, conversion_function=lambda x: x):
         "z_score": z_score,
         "p_value": p_value,
         "sample_diff_mean": sample_diff_mean,
-        "sample_diff_std": sample_diff_std
+        "sample_diff_std": sample_diff_std,
+        "sample_diff_z_score": sample_diff_z_score,
+        "sample_diff_p_value": p_value,
+        "positive_diff_proportion": positive_diff_proportion
     }
 
 datasets = [
@@ -91,11 +100,10 @@ print()
 
 print("THEORETICAL DIFFERENCE MEAN AND STANDARD DEVIATIONS")
 for d in datasets:
-    name_lower = d['name'].lower()
-    print(f"{name_lower} E(x1-x2) = {d['diff_mean']:.3f} mm")
-    print(f"{name_lower} Var(x1-x2) = {d['var_of_diff']:.3f} mm^2")
+    print(f"{d['name']} E(x1-x2) = {d['diff_mean']:.3f} mm")
+    print(f"{d['name']} Var(x1-x2) = {d['var_of_diff']:.3f} mm^2")
     print(f"\tstd of that is {d['std_of_diff']:.3f} mm")
-    print(f"({name_lower}) Z score of difference=0: {d['z_score']:.3f}")
+    print(f"({d['name']}) Z score of difference=0: {d['z_score']:.3f}")
     print(f"P(z > {d['z_score']:.3f}): {d['p_value']:.3f}")
 print()
 
@@ -103,4 +111,7 @@ print("SAMPLE DIFFERENCE MEAN AND STANDARD DEVIATIONS")
 for d in datasets:
     print(f"{d['name']} height difference mean: {d['sample_diff_mean']:.3f} mm")
     print(f"{d['name']} height difference std: {d['sample_diff_std']:.3f} mm")
+    print(f"({d['name']}) Z score of difference=0: {d['sample_diff_z_score']:.3f}")
+    print(f"P(z > {d['sample_diff_z_score']:.3f}): {d['p_value']:.3f}")
+    print(f"({d['name']}) Actual positive difference proportion: {d['positive_diff_proportion']:.3f}")
 print()
