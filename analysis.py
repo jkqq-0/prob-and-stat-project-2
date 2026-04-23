@@ -44,8 +44,8 @@ def process_dataset(name, filename, conversion_function=lambda x: x):
     )
 
     # Two-tailed check (95% confidence)
-    conf_lower, conf_upper = stats.norm.interval(0.95)
-    interval_check = conf_lower < test_statistic < conf_upper
+    ci_lower_bound, ci_upper_bound = stats.norm.interval(0.95)
+    interval_check = ci_lower_bound < test_statistic < ci_upper_bound
 
     # One-tailed check
     one_tailed_critical = stats.norm.ppf(0.95)
@@ -93,6 +93,31 @@ def joint_hypothesis_test(results1, results2):
     return (p1_hat - p2_hat) / np.sqrt(
         ((p_bar * q_bar) / n_1) + ((p_bar * q_bar) / n_2)
     )
+
+
+def t_test(results1, results2, sex: str):
+    assert sex == "male" or sex == "female"
+
+    n_1 = results1["sample_size"]
+    n_2 = results2["sample_size"]
+
+    df = min([n_1 - 1, n_2 - 1])
+
+    xbar_1 = results1[f"{sex}_mean"]
+    xbar_2 = results2[f"{sex}_mean"]
+    s_1 = results1[f"{sex}_std"]
+    s_2 = results2[f"{sex}_std"]
+
+    t = (xbar_1 - xbar_2) / np.sqrt((s_1**2 / n_1) + (s_2**2 / n_2))
+    p_value = 2 * stats.t.sf(np.abs(t), df=df)
+
+    return t, p_value
+
+
+def get_degrees_of_freedom(results1, results2):
+    n_1 = results1["sample_size"]
+    n_2 = results2["sample_size"]
+    return min([n_1 - 1, n_2 - 1])
 
 
 # Dataset processing
@@ -180,3 +205,21 @@ else:
         f"\tStatistic {joint_test_z:.4f} is outside ({conf_lower:.4f}, {conf_upper:.4f})."
     )
     print("\tSignificant cultural difference detected.")
+print()
+
+# T-Testing (Part 2, Q18)
+t_m, pt_m = t_test(datasets[0], datasets[1], "male")
+t_f, pt_f = t_test(datasets[0], datasets[1], "female")
+t_ci = stats.t.interval(0.95, df=get_degrees_of_freedom(datasets[0], datasets[1]))
+
+print("T TESTING (By sex across datasets)")
+print(f"Male test statistic (t): {t_m:.4f}. P-value: {pt_m:.4f}")
+if t_ci[0] < t_m < t_ci[1]:
+    print("\tNo significant difference detected between datasets.")
+else:
+    print("\tSignificant difference detected between datasets.")
+print(f"Female test statistic (t): {t_f:.4f}. P-value: {pt_f:.4f}")
+if t_ci[0] < t_f < t_ci[1]:
+    print("\tNo significant difference detected between datasets.")
+else:
+    print("\tSignificant difference detected between datasets.")
