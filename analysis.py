@@ -1,63 +1,59 @@
-import openpyxl
+import pandas as pd
 import numpy as np
 import scipy.stats as stats
 
-def get_heights_pairwise(frame, conversion_function=lambda x: x):
-    male_female_pairs = []
-
-    for row in range(2, frame.max_row):
-        pair = []
-        for col in frame.iter_cols(1, frame.max_column):
-            pair.append(conversion_function(col[row].value))
-        male_female_pairs.append(pair)
-
-    return male_female_pairs
-
-def get_heights(dataframe, column, conversion_function=lambda x: x):
-    heights = []
-    for row in range(2, dataframe.max_row):
-        heights.append(conversion_function(dataframe[row][column].value))
-    return heights
 
 def get_z_score(x, mu, sigma):
     return (x - mu) / sigma
 
+
 def process_dataset(name, filename, conversion_function=lambda x: x):
-    data = openpyxl.load_workbook(filename)
-    sheet = data.active
-    
-    male_col, female_col = 0, 1
-    
-    males = get_heights(sheet, male_col, conversion_function)
-    females = get_heights(sheet, female_col, conversion_function)
-    
-    male_mean, female_mean = np.mean(males), np.mean(females)
-    male_std, female_std = np.std(males), np.std(females)
-    
-    correlation = np.corrcoef(males, females)[0, 1]
-    
-    # Theoretical difference
+    df = pd.read_excel(filename)
+    df = df.map(conversion_function)
+    males = df.iloc[:, 0]
+    females = df.iloc[:, 1]
+
+    sample_size = len(df)
+
+    male_mean, female_mean = males.mean(), females.mean()
+    male_std, female_std = males.std(), females.std()
+
+    correlation = males.corr(females)
+
+    # Theoretical difference (Bivariate Normal model)
     diff_mean = male_mean - female_mean
     var_of_diff = male_std**2 + female_std**2 - 2 * correlation * male_std * female_std
     std_of_diff = np.sqrt(var_of_diff)
-    
+
+    # P(X1 - X2 > 0) using theoretical model
     z_score = get_z_score(0, diff_mean, std_of_diff)
     p_value = stats.norm.sf(z_score)
-    
-    # Sample statistical height differences
-    pairs = get_heights_pairwise(sheet, conversion_function)
-    diffs = np.array([p[0] - p[1] for p in pairs])
-    sample_diff_mean = np.mean(diffs)
-    sample_diff_std = np.std(diffs)
-    sample_diff_z_score = get_z_score(0, sample_diff_mean, sample_diff_std)
-    p_value = stats.norm.sf(sample_diff_z_score)
 
-    # actual count with height difference > 0
-    positive_diffs = [k for k in diffs if k > 0]
-    positive_diff_proportion = len(positive_diffs) / len(diffs)
+    # Sample statistical height differences (Y)
+    diffs = males - females
+    sample_diff_mean = diffs.mean()
+    sample_diff_std = diffs.std()
+    sample_diff_z_score = get_z_score(0, sample_diff_mean, sample_diff_std)
+    sample_diff_p_value = stats.norm.sf(sample_diff_z_score)
+
+    positive_diff_proportion = (diffs > 0).mean()
+
+    # Hypothesis testing (Question 11)
+    test_statistic = (sample_diff_p_value - p_value) / np.sqrt(
+        (p_value * (1 - p_value)) / sample_size
+    )
+
+    # Two-tailed check (95% confidence)
+    conf_lower, conf_upper = stats.norm.interval(0.95)
+    interval_check = conf_lower < test_statistic < conf_upper
+
+    # One-tailed check
+    one_tailed_critical = stats.norm.ppf(0.95)
+    one_tailed_check = test_statistic > one_tailed_critical
 
     return {
         "name": name,
+        "sample_size": sample_size,
         "male_mean": male_mean,
         "female_mean": female_mean,
         "male_std": male_std,
@@ -71,47 +67,116 @@ def process_dataset(name, filename, conversion_function=lambda x: x):
         "sample_diff_mean": sample_diff_mean,
         "sample_diff_std": sample_diff_std,
         "sample_diff_z_score": sample_diff_z_score,
-        "sample_diff_p_value": p_value,
-        "positive_diff_proportion": positive_diff_proportion
+        "sample_diff_p_value": sample_diff_p_value,
+        "positive_diff_proportion": positive_diff_proportion,
+        "test_statistic": test_statistic,
+        "interval_check": interval_check,
+        "one_tailed_check": one_tailed_check,
     }
 
+
+def joint_hypothesis_test(results1, results2):
+    n_1 = results1["sample_size"]
+    n_2 = results2["sample_size"]
+
+    p1_hat = results1["sample_diff_p_value"]
+    p2_hat = results2["sample_diff_p_value"]
+
+    # Calculate x_i using the hint from Q16
+    x1 = p1_hat * n_1
+    x2 = p2_hat * n_2
+
+    p_bar = (x1 + x2) / (n_1 + n_2)
+    q_bar = 1 - p_bar
+
+    # Null hypothesis: p1 = p2
+    return (p1_hat - p2_hat) / np.sqrt(
+        ((p_bar * q_bar) / n_1) + ((p_bar * q_bar) / n_2)
+    )
+
+
+# Dataset processing
 datasets = [
     process_dataset("Marsh", "heights-data-marsh-1988-great-britain.xlsx"),
-    process_dataset("Galton", "GaltonFamilies-1886.xlsx", lambda x: 25.4 * x)
+    process_dataset("Galton", "GaltonFamilies-1886.xlsx", lambda x: 25.4 * x),
 ]
 
-# Output
-print("SAMPLE MEANS")
+# Formatting and Output
+print("SAMPLE SIZES")
 for d in datasets:
-    print(f"{d['name']} Mean male height: {d['male_mean']:.3f} mm")
-    print(f"{d['name']} Mean female height: {d['female_mean']:.3f} mm")
+    print(f"{d['name']}: {d['sample_size']}")
 print()
 
-print("SAMPLE STANDARD DEVIATIONS")
+print("SAMPLE MEANS")
 for d in datasets:
-    print(f"{d['name']} male height standard deviation: {d['male_std']:.3f} mm")
-    print(f"{d['name']} female height standard deviation: {d['female_std']:.3f} mm")
+    print(f"{d['name']} Mean male height: {d['male_mean']:.4f} mm")
+    print(f"{d['name']} Mean female height: {d['female_mean']:.4f} mm")
+print()
+
+print("SAMPLE STANDARD DEVIATIONS (StDev.S)")
+for d in datasets:
+    print(f"{d['name']} male height standard deviation: {d['male_std']:.4f} mm")
+    print(f"{d['name']} female height standard deviation: {d['female_std']:.4f} mm")
 print()
 
 print("SAMPLE MEAN CORRELATION")
 for d in datasets:
-    print(f"Correlation between male and female heights ({d['name']}) {d['correlation']:.3f}")
+    print(
+        f"Correlation between male and female heights ({d['name']}): {d['correlation']:.4f}"
+    )
 print()
 
-print("THEORETICAL DIFFERENCE MEAN AND STANDARD DEVIATIONS")
+print("THEORETICAL DIFFERENCE (Bivariate Normal Model)")
 for d in datasets:
-    print(f"{d['name']} E(x1-x2) = {d['diff_mean']:.3f} mm")
-    print(f"{d['name']} Var(x1-x2) = {d['var_of_diff']:.3f} mm^2")
-    print(f"\tstd of that is {d['std_of_diff']:.3f} mm")
-    print(f"({d['name']}) Z score of difference=0: {d['z_score']:.3f}")
-    print(f"P(z > {d['z_score']:.3f}): {d['p_value']:.3f}")
+    print(f"{d['name']} E(x1-x2) = {d['diff_mean']:.4f} mm")
+    print(f"{d['name']} Var(x1-x2) = {d['var_of_diff']:.4f} mm^2")
+    print(f"\tstd of that is {d['std_of_diff']:.4f} mm")
+    print(f"({d['name']}) Z score of difference=0: {d['z_score']:.4f}")
+    print(f"P(z > {d['z_score']:.4f}): {d['p_value']:.4f}")
 print()
 
-print("SAMPLE DIFFERENCE MEAN AND STANDARD DEVIATIONS")
+print("SAMPLE DIFFERENCE (Paired Y values)")
 for d in datasets:
-    print(f"{d['name']} height difference mean: {d['sample_diff_mean']:.3f} mm")
-    print(f"{d['name']} height difference std: {d['sample_diff_std']:.3f} mm")
-    print(f"({d['name']}) Z score of difference=0: {d['sample_diff_z_score']:.3f}")
-    print(f"P(z > {d['sample_diff_z_score']:.3f}): {d['p_value']:.3f}")
-    print(f"({d['name']}) Actual positive difference proportion: {d['positive_diff_proportion']:.3f}")
+    print(f"{d['name']} height difference mean: {d['sample_diff_mean']:.4f} mm")
+    print(f"{d['name']} height difference std: {d['sample_diff_std']:.4f} mm")
+    print(f"({d['name']}) Z score of difference=0: {d['sample_diff_z_score']:.4f}")
+    print(f"P(z > {d['sample_diff_z_score']:.4f}): {d['sample_diff_p_value']:.4f}")
+    print(
+        f"({d['name']}) Actual positive difference proportion: {d['positive_diff_proportion']:.4f}"
+    )
 print()
+
+print("HYPOTHESIS TESTING (Single Dataset)")
+for d in datasets:
+    print(f"{d['name']}, Test Statistic (z): {d['test_statistic']:.4f}")
+    if d["interval_check"]:
+        print(
+            f"\tTest statistic is within 95% confidence interval (Fail to reject H0)."
+        )
+    else:
+        print(f"\tTest statistic is outside 95% confidence interval (Reject H0).")
+
+    if d["one_tailed_check"]:
+        print(
+            f"\tTest statistic suggests proportion is greater than model (Reject H0)."
+        )
+    else:
+        print(f"\tTest statistic does not suggest proportion is greater than model.")
+print()
+
+# Joint Hypothesis Test (Part 2, Q16)
+joint_test_z = joint_hypothesis_test(datasets[0], datasets[1])
+conf_lower, conf_upper = stats.norm.interval(0.95)
+
+print("JOINT HYPOTHESIS TESTING (Marsh vs Galton)")
+print(f"Joint test statistic (z): {joint_test_z:.4f}")
+if conf_lower < joint_test_z < conf_upper:
+    print(
+        f"\tStatistic {joint_test_z:.4f} is within ({conf_lower:.4f}, {conf_upper:.4f})."
+    )
+    print("\tNo significant cultural difference detected.")
+else:
+    print(
+        f"\tStatistic {joint_test_z:.4f} is outside ({conf_lower:.4f}, {conf_upper:.4f})."
+    )
+    print("\tSignificant cultural difference detected.")

@@ -9,6 +9,8 @@ openpyxl = "*"
 xlwings = "*"
 scipy = "==1.17.1"
 scipy-stubs = "~=1.17.1"
+ipykernel = "*"
+black = "*"
 
 [dev-packages]
 
