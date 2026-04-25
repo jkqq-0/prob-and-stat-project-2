@@ -114,6 +114,17 @@ def t_test(results1, results2, sex: str):
     return t, p_value
 
 
+def difference_t_test(results):
+    n = results["sample_size"]
+    d_bar = results["sample_diff_mean"]
+    s_bar = results["sample_diff_std"]
+
+    t = d_bar / (s_bar / np.sqrt(n))
+    p = stats.t.sf(t, df=n - 1)
+
+    return t, p
+
+
 def get_degrees_of_freedom(results1, results2):
     n_1 = results1["sample_size"]
     n_2 = results2["sample_size"]
@@ -144,7 +155,7 @@ for d in datasets:
     print(f"{d['name']} female height standard deviation: {d['female_std']:.4f} mm")
 print()
 
-print("SAMPLE MEAN CORRELATION")
+print("SAMPLE CORRELATION")
 for d in datasets:
     print(
         f"Correlation between male and female heights ({d['name']}): {d['correlation']:.4f}"
@@ -212,7 +223,7 @@ t_m, pt_m = t_test(datasets[0], datasets[1], "male")
 t_f, pt_f = t_test(datasets[0], datasets[1], "female")
 t_ci = stats.t.interval(0.95, df=get_degrees_of_freedom(datasets[0], datasets[1]))
 
-print("T TESTING (By sex across datasets)")
+print("T TESTING (Difference in average height by sex across datasets is significant)")
 print(f"Male test statistic (t): {t_m:.4f}. P-value: {pt_m:.4f}")
 if t_ci[0] < t_m < t_ci[1]:
     print("\tNo significant difference detected between datasets.")
@@ -223,3 +234,20 @@ if t_ci[0] < t_f < t_ci[1]:
     print("\tNo significant difference detected between datasets.")
 else:
     print("\tSignificant difference detected between datasets.")
+print()
+
+print("T TESTING (Difference in heights pairwise is significant)")
+t_2_ci_marsh = stats.t.interval(0.95, df=datasets[0]["sample_size"])
+t_2_ci_galton = stats.t.interval(0.95, df=datasets[1]["sample_size"])
+t_2_marsh, p_2_marsh = difference_t_test(datasets[0])
+t_2_galton, p_2_galton = difference_t_test(datasets[1])
+print(f"Marsh Dataset test statistic (t): {t_2_marsh:.4f}. P-value: {p_2_marsh:.4f}")
+if t_2_ci_marsh[0] < t_2_marsh < t_2_ci_marsh[1]:
+    print("\tNo significant difference detected between heights")
+else:
+    print("\tSignificant difference detected between heights")
+print(f"Galton Dataset test statistic (t): {t_2_galton:.4f}. P-value: {p_2_galton:.4f}")
+if t_2_ci_galton[0] < t_2_galton < t_2_ci_galton[1]:
+    print("\tNo significant difference detected between heights")
+else:
+    print("\tSignificant difference detected between heights")
