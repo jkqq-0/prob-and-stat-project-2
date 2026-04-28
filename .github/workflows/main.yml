@@ -1,0 +1,12 @@
+name: Build LaTeX
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run local action
+        uses: ./.github/actions
