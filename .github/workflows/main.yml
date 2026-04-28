@@ -19,7 +19,7 @@ jobs:
       - name: Run Tectonic
         run: tectonic paper/main.tex
       - name: Upload pdf
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: main
           path: main.pdf
