@@ -5,8 +5,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run local action
-        uses: ./.github/actions
+      - name: Compile LaTeX (latexmk)
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: paper/main.tex
+          working_directory: .
+          latexmk_use_xelatex: false
+          latexmk_shell_escape: true
