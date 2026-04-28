@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{unicode-math}
+\usepackage{makecell}
+\usepackage{tabularray}
+\usepackage{indentfirst}
+\usepackage{booktabs}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[style=authoryear, backend=bibtex]{biblatex}
+\addbibresource{references.bib}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+
+\newcommand{\determinant}[1]{\begin{vmatrix} #1 \end{vmatrix}}
+
+\title{Probability and Statistics - Project 2}
+\author{James Keys, Samuel Paez}
+\date{April 28, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}\label{sec:introduction}
+Statistics, the branch of mathematics that deals with collecting and analyzing real-world data, is of great importance for both prospective and retrospective studies.
+In contrast to probability, statistics serves as empirical proof for underlying assumptions people make in their daily lives, suggesting correlation and sometimes even causation.
+In this paper, the powerful tools of this field formally introduced in the 17th century will be explored in the context of an intriguing question: do men prefer to marry women that are shorter than them, and does this relate to historical time periods?
+
+\section{Main Goal}\label{sec:main-goal}
+In order to aid with the search to a viable answer to this question, the data sets collected by Galton, F. in 1886 and Marsh, C. in 1988 will be utilized, where the heights of couples are provided in inches and millimeters, respectively (Galton's data was converted to mm with the conversion 25.4 mm = 1 inch).
+In doing so, we must account for sampling error, the concept that these datasets, despite gathering significant information, may not accurately represent the statistical characteristics of the entire human population.
+Furthermore, this project makes use of the \textit{Central Limit Theorem (CLT)}, which states that as the sample size $S$ (the amount of data collected for a particular random variable) increases, the data set distribution will become normal so that
+\begin{equation}
+p(s)=\frac{e^{-\frac{(s-\mu)^2}{2\sigma^2}}}{\sigma\sqrt{2\pi}}
+\label{eq:normal-distribution}
+\end{equation}
+where $\mu$ is the mean, $\sigma$ is the variance, and $s \in S$.
+This iconic theorem also implies that the statistical properties of the sample will approach those of the population so that
+\begin{equation}
+    \lim_{n\to\infty}\mu_n=\mu
+    \qquad\text{and}\qquad
+    \lim_{n\to\infty}\sigma_n=\sigma.
+    \label{eq:limits-for-central-limit}
+\end{equation}
+
+More generally, a random variable is any one-to-one function $V:S\rightarrow{\mathbb{R}}$ that has a discrete or continuous range $R(V)$; these outputs will be denoted as the lowercase version of its random variable.
+The following concepts will prove useful as we embark on this endeavor:
+\begin{enumerate}
+    \item statistic: a value describing the presented data
+    \item  hypothesis: a claim about a statistic pertaining to a data set
+    \item null hypothesis ($H_0$): a claim that the statistic equals a particular value
+    \item alternate hypothesis ($H_a$): a claim that the statistic is not equal to a value and instead is greater or less than it
+    \item confidence level: probability that the outcome of a test was not a result of chance
+\end{enumerate}
+
+\section{Solution}\label{sec:solution}
+\input{solution}
+
+\section{Conclusion}\label{sec:conclusion}
+To summarize our findings:
+
+This paper has hopefully showcased the intricacies of statistics and its probabilistic repercussions on human understanding of large-scale phenomena.
+Through its innate limitations and assumptions, a deep humility can be attained while fully appreciating its benefits for analytical sciences.
+
+\section{Appendix}\label{sec:appendix}
+
+The mean, standard deviation, and correlation statistics were calculated using the built-in dataframe methods provided by the Pandas library \parencite{pandas}.
+For hypothesis testing, $p$-values and critical values were derived from the Standard Normal ($Z$) and Student's-$t$ distributions using the stats module from the Scipy library \parencite{scipy}.
+In particular, the survival function (sf) was employed for right-tail probability calculations, and the percent-point function (ppf) was used to determine critical thresholds for significance.
+The code used to calculate the results in this paper is hosted at the following GitHub repository: \url{https://github.com/jkqq-0/prob-and-stat-project-2}.
+
+\printbibliography
+
+\end{document}

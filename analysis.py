@@ -39,7 +39,7 @@ def process_dataset(name, filename, conversion_function=lambda x: x):
     positive_diff_proportion = (diffs > 0).mean()
 
     # Hypothesis testing (Question 11)
-    test_statistic = (sample_diff_p_value - p_value) / np.sqrt(
+    test_statistic = (positive_diff_proportion - p_value) / np.sqrt(
         (p_value * (1 - p_value)) / sample_size
     )
 
@@ -79,8 +79,8 @@ def joint_hypothesis_test(results1, results2):
     n_1 = results1["sample_size"]
     n_2 = results2["sample_size"]
 
-    p1_hat = results1["sample_diff_p_value"]
-    p2_hat = results2["sample_diff_p_value"]
+    p1_hat = results1["positive_diff_proportion"]
+    p2_hat = results2["positive_diff_proportion"]
 
     # Calculate x_i using the hint from Q16
     x1 = p1_hat * n_1
@@ -123,6 +123,23 @@ def difference_t_test(results):
     p = stats.t.sf(t, df=n - 1)
 
     return t, p
+
+
+def difference_of_differences_t_test(results1, results2):
+    n_1 = results1["sample_size"]
+    n_2 = results2["sample_size"]
+
+    df = min([n_1 - 1, n_2 - 1])
+
+    dbar_1 = results1[f"sample_diff_mean"]
+    dbar_2 = results2[f"sample_diff_mean"]
+    s_1 = results1[f"sample_diff_std"]
+    s_2 = results2[f"sample_diff_std"]
+
+    t = (dbar_1 - dbar_2) / np.sqrt((s_1**2 / n_1) + (s_2**2 / n_2))
+    p_value = 2 * stats.t.sf(np.abs(t), df=df)
+
+    return t, p_value
 
 
 def get_degrees_of_freedom(results1, results2):
@@ -237,17 +254,30 @@ else:
 print()
 
 print("T TESTING (Difference in heights pairwise is significant)")
-t_2_ci_marsh = stats.t.interval(0.95, df=datasets[0]["sample_size"])
-t_2_ci_galton = stats.t.interval(0.95, df=datasets[1]["sample_size"])
+t_2_c_marsh = stats.t.ppf(0.95, df=datasets[0]["sample_size"] - 1)
+t_2_c_galton = stats.t.ppf(0.95, df=datasets[1]["sample_size"] - 1)
 t_2_marsh, p_2_marsh = difference_t_test(datasets[0])
 t_2_galton, p_2_galton = difference_t_test(datasets[1])
 print(f"Marsh Dataset test statistic (t): {t_2_marsh:.4f}. P-value: {p_2_marsh:.4f}")
-if t_2_ci_marsh[0] < t_2_marsh < t_2_ci_marsh[1]:
-    print("\tNo significant difference detected between heights")
+if t_2_marsh > t_2_c_marsh:
+    print("\tSignificant positive difference detected between heights")
 else:
-    print("\tSignificant difference detected between heights")
+    print("\tNo significant positive difference detected between heights")
 print(f"Galton Dataset test statistic (t): {t_2_galton:.4f}. P-value: {p_2_galton:.4f}")
-if t_2_ci_galton[0] < t_2_galton < t_2_ci_galton[1]:
-    print("\tNo significant difference detected between heights")
+if t_2_galton > t_2_c_galton:
+    print("\tSignificant positive difference detected between heights")
 else:
-    print("\tSignificant difference detected between heights")
+    print("\tNo significant positive difference detected between heights")
+print()
+
+
+print(
+    "T TESTING (Difference in mean height differences between datasets is significant)"
+)
+# using t_ci as before, result should be the same in this case
+t_3, p_3 = difference_of_differences_t_test(datasets[0], datasets[1])
+print(f"test statistic(t): {t_3:.4f}. P-value: {p_3:.4f}")
+if t_ci[0] < t_3 < t_ci[1]:
+    print("\tNo statistically significant difference detected.")
+else:
+    print("\tStatistically significant difference detected.")
