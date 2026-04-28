@@ -79,7 +79,7 @@ Using a change of variables to translate the probability of a given event from t
    P = \int_{Z} g(z_1,z_2)dz_2 dz_1= \int_{X} g(\frac{x_1-\mu_1}{\sigma_1},\frac{1}{\sqrt{1-\rho^2}}(\frac{x_2-\mu_2}{\sigma_2}-\rho\frac{x_1-\mu_1}{\sigma_1}))\cdot|J_{\vec{f}}|dz_2 dz_1
     \label{eq:change_of_variables_formula}
 \end{equation}
-where $J_{\vec{f}}$ is the Jacobian determinant, acknowledging that 
+where $J_{\vec{f}}$ is the Jacobian determinant, acknowledging that
 \begin{equation}
     Z_1=\frac{X_1-\mu_1}{\sigma_1} \qquad
     \text{and}\qquad
@@ -110,7 +110,7 @@ Now, observing that $f(x_1,x_2)=g(z_1,z_2)\cdot J_{\vec{f}}(x_1,x_2) $ we can pl
             \left( \frac{x_1-\mu_1}{\sigma_1} \right)^2
             +
              \frac{1}{{1-\rho^2}}\left( \frac{x_2-\mu_2}{\sigma_2}-\frac{\rho(x_1-\mu_1)}{\sigma_1} \right)^2
-        \right) 
+        \right)
     \right]\\
     &=\frac{1}{2\pi\sigma_1\sigma_2\sqrt{1-\rho^2}}
     \exp\Bigg[
@@ -274,7 +274,7 @@ Therefore, our new null hypothesis is $H_0:p_1=p_2$ while the alternative hypoth
 To determine whether there is a notable difference between the proportions, we introduce the following statistic analogous to the previous one:
 
 \begin{equation}
-    z=\frac{\hat{p_1}-\hat{p_2}-(p_1-p_2)}{\sqrt{\frac{\overline{p}(1-\overline{p})}{n_1}+\frac{\overline{p}(1-\overline{p})}{n_2}}} 
+    z=\frac{\hat{p_1}-\hat{p_2}-(p_1-p_2)}{\sqrt{\frac{\overline{p}(1-\overline{p})}{n_1}+\frac{\overline{p}(1-\overline{p})}{n_2}}}
     \label{eq:taller-male-proportion-z-statistic}
 \end{equation}
 where $\bar{p}=\frac{x_1+x_2}{n_1+n_2}$ is the average proportion and $x_1$ is the number of couples with the male being taller out of the $n_1$ couples in the first data set.
