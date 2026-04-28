@@ -12,5 +12,5 @@ jobs:
         with:
           root_file: paper/main.tex
           working_directory: .
-          latexmk_use_xelatex: false
+          latexmk_use_xelatex: true
           latexmk_shell_escape: true
