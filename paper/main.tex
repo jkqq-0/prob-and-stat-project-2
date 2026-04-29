@@ -66,13 +66,32 @@ The following concepts will prove useful as we embark on this endeavor:
 \section{Conclusion}\label{sec:conclusion}
 To summarize our findings:
 
+\begin{itemize}
+    \item In both datasets, the mean height of men is greater than the mean height of women.
+    \item People in the Marsh dataset were shorter on average than those in the Galton dataset.
+    \item There is a slight positive correlation between spouse heights, but this correlation is too small to have any predictive power.
+    \item The difference in the heights of men and women can be accurately predicted using a bivariate normal distribution.
+    \item We failed to reject the null hypothesis that the actual proportion of taller-male couples is equal to the proportion expected from the model.
+    \item The height difference between men and women is statistically significant.
+    \item There is not a statistically significant difference in the proportion of taller-male couples between the two datasets.
+    \item There is not a statistically significant difference between the average height gap of the two time periods.
+\end{itemize}
+
+From these findings, it is certainly the case that men tend to marry women that are shorter than them.
+However, the dataset provides no evidence that this tendency is the result of men preferring to marry shorter women or women preferring to marry taller men.
+It is simply the case that men tend to be taller than women, on average.
+Such a preference may exist, but proving its existence would require qualitative methods.
+We also showed that the two datasets describe significantly different populations.
+While this lends credence to the idea that we have discovered a general trend, we would need more data from different time periods and cultures to strengthen the evidence for this conclusion.
+
 This paper has hopefully showcased the intricacies of statistics and its probabilistic repercussions on human understanding of large-scale phenomena.
-Through its innate limitations and assumptions, a deep humility can be attained while fully appreciating its benefits for analytical sciences.
+We have demonstrated how this field can attempt to find answers to curious questions many might have deemed unknowable in the past.
+Yet, through its innate limitations and assumptions, statistics fosters a greater level of transparency and humility among the scientific community which holds promise for advancing many analytical fields of study for the benefit of mankind.
 
 \section{Appendix}\label{sec:appendix}
 
 The mean, standard deviation, and correlation statistics were calculated using the built-in dataframe methods provided by the Pandas library \parencite{pandas}.
-For hypothesis testing, $p$-values and critical values were derived from the Standard Normal ($Z$) and Student's-$t$ distributions using the stats module from the Scipy library \parencite{scipy}.
+For hypothesis testing, $p$-values and critical values were derived from the Standard Normal ($Z$) and student-$t$ distributions using the stats module from the Scipy library \parencite{scipy}.
 In particular, the survival function (sf) was employed for right-tail probability calculations, and the percent-point function (ppf) was used to determine critical thresholds for significance.
 The code used to calculate the results in this paper is hosted at the following GitHub repository: \url{https://github.com/jkqq-0/prob-and-stat-project-2}.
 

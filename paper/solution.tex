@@ -8,7 +8,6 @@ The sample mean is defined as
     \overline{x}_n\coloneqq\frac{1}{n}\left(\sum_{k=1}^{n}x_k\right)=\frac{x_1+x_2+\cdots+x_n}{n}
     \label{eq:sample-mean}
 \end{equation}
-
 and acts as a simple, unweighted average of the dataset.
 The standard deviation is a measure of the amount of variation of a dataset about the average.
 It is defined as
@@ -17,7 +16,7 @@ It is defined as
     \label{eq:sample-std-dev}
 \end{equation}
 The sample standard deviation includes the $\frac{1}{n-1}$ instead of $\frac{1}{n}$ because the formula which uses the latter fraction is only valid if our sample represents the \textit{entire} population.
-Including the $n-1$ term gives the proper unbiased estimator of a larger population.
+Including the $n-1$ term gives the proper unbiased estimator of a larger population based on a smaller sample.
 
 Tables~\ref{tab:mean-heights} and~\ref{tab:std-heights} present the mean and standard deviation of heights for each sex across both datasets.
 
@@ -76,7 +75,7 @@ Therefore, the joint distribution for these two variables is
 \end{equation}
 Using a change of variables to translate the probability of a given event from the sample space $Z\in\mathbb{R}^2$ to $X\in\mathbb{R}^2$, the joint density function $f(x_1, x_2)$ will follow this equation:
 \begin{equation}
-   P = \int_{Z} g(z_1,z_2)dz_2 dz_1= \int_{X} g(\frac{x_1-\mu_1}{\sigma_1},\frac{1}{\sqrt{1-\rho^2}}(\frac{x_2-\mu_2}{\sigma_2}-\rho\frac{x_1-\mu_1}{\sigma_1}))\cdot|J_{\vec{f}}|dz_2 dz_1
+   P = \int_{Z} g(z_1,z_2)dz_2 dz_1= \int_{X} g(\frac{x_1-\mu_1}{\sigma_1},\frac{1}{\sqrt{1-\rho^2}}(\frac{x_2-\mu_2}{\sigma_2}-\rho\frac{x_1-\mu_1}{\sigma_1}))\cdot|J_{\vec{f}}|dx_2 dx_1
     \label{eq:change_of_variables_formula}
 \end{equation}
 where $J_{\vec{f}}$ is the Jacobian determinant, acknowledging that
@@ -99,7 +98,7 @@ To further reduce this expression, it is necessary to define the coordinate tran
         \frac{-\rho}{\sigma_1\sqrt{1-\rho^2}} & \frac{1}{\sigma_2\sqrt{1-\rho^2}}
     }
     =\frac{1}{\sigma_1\sigma_2\sqrt{1-\rho^2}}.
-    \label{eq:jacobian-determinant.}
+    \label{eq:jacobian-determinant}
 \end{equation}
 Now, observing that $f(x_1,x_2)=g(z_1,z_2)\cdot J_{\vec{f}}(x_1,x_2) $ we can plug in everything and simplify to introduce what will be referred to as the bivariate normal distribution:
 \small
@@ -161,7 +160,7 @@ For both of these datasets, the correlation is mathematically noticeable, but kn
 Taking the Marsh correlation value of $\rho=0.3644$, for example, we can calculate the coefficient of determination $R^2=\rho^2\approx0.1328$.
 This shows that $13.28\%$ of the variance of the heights of the women is caused by the heights of the men, while $86.72\%$ of the variance is caused by other unknown factors.
 
-Moving onto the next foundation proposition, it is valuable to examine how the expected value and variance of bivariate data behaves.
+Moving onto the next foundational proposition, it is valuable to examine how the expected value and variance of bivariate data behaves.
 For this, let $L\coloneqq a_1 X_1+a_2 X_2+b$ be any linear combination of the bivariate normal random variables $X_1$ and $X_2$ where $a_1$, $a_2$, and $b$ are constants.
 Then, applying the basic definitions of these two unbiased estimators,
 \begin{equation}
@@ -207,7 +206,7 @@ Because we used the sample mean, variance, and correlation as parameters for our
     \label{tab:statistics-of-differences-sample}
 \end{table}
 
-Now, if husbands are indeed taller than their wives, it should be the case than $X_1-X_2>0$ and $Y>0$ most of the time.
+Now, if husbands are indeed taller than their wives, it should be the case that $X_1-X_2>0$ and $Y>0$ most of the time.
 To find the probability that this difference is positive in both cases, we take advantage of the idea that both columns of data are normally distributed as depicted below:
 \begin{equation}
 P(X_1-X_2>0)=\frac{1}{\sigma\sqrt{2\pi}}\int_0 ^\infty e^{-\frac{((x_1-x_2)-\mu)^2}{2\sigma^2}}d(x_1-x_2) =\frac{1}{\sqrt{2\pi}} \int_Z ^
@@ -218,7 +217,7 @@ P(X_1-X_2>0)=\frac{1}{\sigma\sqrt{2\pi}}\int_0 ^\infty e^{-\frac{((x_1-x_2)-\mu)
 An analogous integral could be made for $P(Y>0)$.
 Here, the Z-score (found via u-substitution) is the lower integration bound for each data set, so that $Z_{Marsh}=-1.7609$ and $Z_{Galton}=-1.5841$.
 As Table~\ref{tab:comparison-of-difference-probabilities} reveals, the probability for positive heights is identical for both the theoretical bivariate model and the actual difference model; this makes sense because both models assume that the data is distributed normally.
-We can also see that the Marsh data set has a higher height difference than the Galton one, which may become more relevant soon.
+We can also see that the Marsh data set has a higher probability of a positive height difference than the Galton one, which may become more relevant soon.
 Lastly, note that the actual proportion of positive differences with respect to the entire sample size is lower for both sets.
 This also makes sense in light of the CLT because as a finite collection of information, both data sets do not account for the smooth distribution of a Gaussian function.
 At this point, it may be concluded that both data sets support the notion that men marry women who are shorter than them.
@@ -240,14 +239,14 @@ At this point, it may be concluded that both data sets support the notion that m
 Expounding upon the definitions outlined in the Main Goal section, it is now necessary to employ this hypothesis testing framework to the presented real-life scenario.
 For this purpose, it is important to highlight the difference between two-tailed and one-tailed tests.
 In a two-tailed test, the rejection region surrounds the nonrejection region from both sides, while in the one-tailed test, this rejection region is only to the right or left.
-In order to perform a two-tailed test on the gathered data over a 95\% confidence interval (level), we introduce the following test statistic:
+To perform a two-tailed test on the gathered data over a 95\% confidence interval, we introduce the following test statistic:
 \begin{equation}
     z=\frac{\hat{p}-p}{\sqrt{\frac{p(1-p)}{n}}}
     \label{eq:proportion-test-statistic}
 \end{equation}
 where $\hat{p}$ is the actual proportion based on a sample size $n$ and $p$ is the population value claim.
 Assuming that the population value is equal to the probability that the theoretical difference is positive, we let our null hypothesis be $H_0:p=P(X_1-X_2>0)$ and the alternative hypothesis be $H_a:p\neq P(X_1-X_2>0)$ for each of the sets.
-Noting that for the Galton data, $n=205$ and for the Marsh data, $n=199$, Table 6 dictates that $z_{Marsh}\approx-1.1745$ and $z_{Galton}\approx-1.6324$.
+Noting that for the Galton data, $n=205$ and for the Marsh data, $n=199$, Table~\ref{tab:comparison-of-difference-probabilities} dictates that $z_{Marsh}\approx-1.1745$ and $z_{Galton}\approx-1.6324$.
 Since the non-rejection region spans an area of 0.95, it follows that there is 0.025 area within the rejection region on both sides ($\alpha=5\%$).
 This implies that $Z_{2.5\%}=-1.95996=-Z_{97.5\%}$.
 Because $z_{Marsh},z_{Galton}\in[Z_{2.5\%}, Z_{97.5\%}]$, we fail to reject the null hypothesis for both datasets.
@@ -285,25 +284,27 @@ This value is cleanly within a confidence interval of 95\% ($z \in [-1.96, 1.96]
 There is, therefore, not a statistically significant difference in the proportion of couples with a taller male between the two datasets.
 This finding is strong evidence that couples across different populations tend to have a taller male.
 
-This evidence strongly suggests that the proportion of couples with a taller male is the same across datasets of different time periods
 To strengthen the argument, we must confirm whether this result is due to our datasets covering populations which are too similar.
-To study the average heights for each set, we introduce here the student-t distribution, which approaches the normal distribution as the sample size increases ($n\rightarrow{\infty}$). The actual expression is given by the following:
+To study the average heights for each set, we introduce here the student-$t$ distribution, which is a generalization of the normal distribution.
+It approaches the normal distribution as the sample size increases ($n\rightarrow{\infty}$).
+The actual expression is given by the following:
 \begin{equation}
 P(X<t)=\frac{1}{B(\frac{1}{2},\frac{\nu}{2})\sqrt{\nu}}\int_{-\infty}^t(1+\frac{x^2}{\nu})^{-(\nu+1)/2}dx
 \label{eq:t-score-integral}
 \end{equation}
 where $B(x,y)=\int_0^1 t^{x-1}(1-t)^{y-1}dt$ is the Beta function and $\nu$ is the degrees of freedom.
-What are degrees of freedom?
-Well, it is basically the number of values that are allowed to vary; take for the sake of illustration, a class of ten students.
+``Degrees of freedom'' here means the number of values that are allowed to vary; take for the sake of illustration, a class of ten students.
 If you know the class average on an exam and in addition know the individual scores of nine students, it is quite straightforward to find the score of the last student.
 One must simply multiply the mean by the sample size and subtract the individual scores.
 More generally, there would be $n-1$ degrees of freedom for $n$ students.
-Going back to our pertaining discussion, the student-t (no pun intended) distribution, as beautiful as it seems, can be quite complex to work with in this introductory paper, so the following simpler test statistic expression will be utilized:
+Returning to the student-$t$ distribution, the following test statistic will be utilized:
 \begin{equation}
 t=\frac{\bar{x}_1-\bar{x}_2-(\mu_1-\mu_2)}{\sqrt{\frac{s_1^2}{n_1}+\frac{s_2^2}{n_2}}}
 \label{eq:comparing-heights-by-sex-across-datasets-t-test}
 \end{equation}
-with the approximation that $\nu=\min\{n_1-1,n_2-1\}$ and positing the null hypothesis as $\mu_1=\mu_2$.
+To simplify our calculations, as this distribution can be quite complex to work with, we will approximate degrees of freedom with $\nu=\min\{n_1-1,n_2-1\}$.
+The null hypothesis here is $\mu_1=\mu_2$.
+
 For the passionate reader, the actual degrees of freedom for non-equal variances is
 \begin{equation}
 \nu=\frac{(A+B)^2}{\frac{A^2}{n_1-1}+\frac{B^2}{n_2-1}}
@@ -316,30 +317,29 @@ Furthermore, if the variances were actually known to be equal (which would be th
     \label{eq:pooled-sample-variance}
 \end{equation}
 
-Attempting once more to focus on the present endeavor, we observe that $\nu=198$ and according to Equation \eqref{eq:comparing-heights-by-sex-across-datasets-t-test}, $t_{males}=-4.1573$ and $t_{females}=-3.9111$ whose magnitudes are greater than 1.97 (which one can find by solving \eqref{eq:t-score-integral} with $t=0.95$).
-These large t-scores indicate that the groups are significantly different and the null hypothesis must be rejected.
-This conclusion is also supported by the p-score for men and women being very close to zero (if the probability for the t-score is less than 0.5, the null hypothesis is rejected).
+Attempting once more to focus on the present endeavor, we observe that $\nu=198$ and according to \eqref{eq:comparing-heights-by-sex-across-datasets-t-test}, $t_{males}=-4.1573$ and $t_{females}=-3.9111$ whose magnitudes are greater than 1.97 (which one can find by solving \eqref{eq:t-score-integral} for $t$ with $P=0.025$ and $P=0.975$).
+These large t-scores indicate that the groups are significantly different and the null hypothesis must be rejected ($\mu_1\neq \mu_2$).
+This conclusion is also supported by the p-score for men ($4.79\times10^{-5}$) and women ($1.26\times10^{-4}$) being very close to zero (if the probability for the t-score is less than 0.05, the null hypothesis is rejected).
 This finding supports the robustness our earlier conclusion that the tendency for the male in a couple to be taller exists across different populations.
 
-Earlier in this paper we used the test statistic in \eqref{eq:taller-male-proportion-z-statistic} to determine whether there was a statistically significant difference between the two datasets in the proportion of couples who had a taller man.
-With our last major test, we will test a similar hypothesis, but one that focuses not on the number of couples with a taller male, but on the magnitude of the height difference.
+Earlier in this paper we used \eqref{eq:taller-male-proportion-z-statistic} to determine that there was not a statistically significant difference between the two datasets in the proportion of couples who had a taller man.
+Now, we will analyze a similar hypothesis, but one that focuses not on the number of couples with a taller male, but on the magnitude of the height difference.
 We will use the following $t$-statistic:
 \begin{equation}
    t=\frac{\bar{d}-\mu_d}{\bar{s}/\sqrt{n}}
    \label{eq:difference-t-test}
 \end{equation}
-where $\bar{d}$ is the mean of the differences in heights and $\bar{s}$ is the standard deviation in the difference in heights.
-$\mu_d$ is the theoretical mean that we test against.
-Our null hypothesis is $H_0: \bar{d} = 0$, and our alternative hypothesis is $H_a:\bar{d} \ne 0$.
-We want to know if $\bar{d}$ is above the critical $t$-score for 95\% confidence ($t\approx1.65$ for both datasets), so this is a one-tailed test.
-Since, in this case, we are comparing $\bar{d}$ to 0, we set $\mu_d=0$.
+where $\bar{d}$ is the mean of the actual differences in heights, $\bar{s}$ is the standard deviation in the actual difference in heights, and $\mu_d$ is the actual difference mean claim.
+Our null hypothesis is $H_0: \mu_{d} < 0$, and our alternative hypothesis is $H_a:\mu_{d} \nless 0$.
+Since this is a one-tailed test, we want to know if $\bar{d}$ is above the critical $t$-score for 95\% confidence ($t\approx1.65$ for both datasets).
+Because of our null hypothesis, we set $\mu_d = 0$.
 Using \eqref{eq:difference-t-test}, we find that $t_{Marsh}=24.8399$ and $t_{Galton}=22.6810$.
 Since both of these are much greater than 1.65, we must reject the null hypothesis for both datasets.
 From this result we can conclude that the magnitude of the height difference between males and females is both positive (i.e.\ the man is taller) and statistically significant.
 
-Let us test one final hypothesis: there is no difference between the mean height difference of both datasets ($H_0:\bar{d}_1\neq \bar{d}_2$).
+Let us test one final hypothesis: there is no difference between the mean height difference of both datasets ($H_0:\bar{d}_1 = \bar{d}_2$).
 We will use a two-tailed $t$-test at a 95\% confidence level to test this claim.
 The $t$-statistic for this hypothesis can be calculated using an equation analogous to \eqref{eq:comparing-heights-by-sex-across-datasets-t-test}, but which replaces $\bar{x}_i$ with $\bar{d}_i$.
 Plugging the calculated statistics from the two datasets into the equation described, we find that $t=-0.5588$.
 This falls neatly within a 95\% confidence interval ($t\in[-1.97,1.97]$ for $\nu=\min\{n_1-1, n_2-1\}=198$ like before), so we fail to reject the null hypothesis.
-From this result we can conclude that there is not a significant difference between the mean height difference of the two datasets.
+From this result we can conclude that there is not a significant difference between the actual mean height difference of the two datasets.
